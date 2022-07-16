@@ -56,12 +56,15 @@ int main(int argc, char* argv[]) {
 
 	// read from txt
 	char *buffer = NULL;		// pointer to stirng
-    size_t bufsize = 32;
+    size_t bufsize = 99;
     ssize_t input;				// string length
 
 	// turn into array of pointers
 	char* in_cols[in_col_num];
 	int in_cols_num = 0;
+
+	// turns to 1 after a '\0' has been put in.
+	int process = 0;
 
 			//printf("-------------\n\tOutput:\n");
 
@@ -78,22 +81,46 @@ int main(int argc, char* argv[]) {
 		// turn into array of pointers
 
 		in_cols[0] = buffer;
+		
 		for(int i = 1; i < input; i++) {
-			if(buffer[i] == ' ' || buffer[i] == '\n') {
-				buffer[i] = '\0';
-				in_cols_num++;
-				in_cols[in_cols_num] = &buffer[i+1];
-				i++;
 
-				if(word_count > word_count_max)
-					word_count_max = word_count;
-
-				word_count = 0;
-				// printf("i = %d word_count_max = %d\n", i, word_count_max);
+			if(process == 1) {
+				if(buffer[i] == ' ' || buffer[i] == '\t')
+					continue;
+				else if(buffer[i] == '\n')
+					break;
+				else {
+					process = 0;
+					in_cols_num++;
+					in_cols[in_cols_num] = &buffer[i];
+				}
 			}
-			word_count++;
+
+			if(process == 0) {
+				if(buffer[i] == ' ' || buffer[i] == '\t') {
+					buffer[i] = '\0';
+
+					if(word_count > word_count_max)
+						word_count_max = word_count;
+
+					word_count = 0;
+					process = 1;
+				// printf("i = %d word_count_max = %d\n", i, word_count_max);
+				}
+				else if(buffer[i] == '\n') {
+					buffer[i] = '\0';
+
+					if(word_count > word_count_max)
+						word_count_max = word_count;
+
+					word_count = 0;
+					break;
+				}
+				else
+					word_count++;
+			}
 		}
-		word_count = 0;
+		word_count = 1;
 		in_cols_num = 0;
 
 
